@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String @id @default(uuid())
+  email        String @unique
+  passwordHash String
+
+  name         String?
+  mobile       String?
+  address      String?
+  businessName String?
+
+  isEmailVerified  Boolean @default(false)
+  profileCompleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  otpCodes      EmailOtp[]
+  userTasks     UserTask[]
+  refreshTokens RefreshToken[]
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id     String @id @default(uuid())
+  userId String
+
+  tokenHash String   @unique
+  expiresAt DateTime
+
+  revoked Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model EmailOtp {
+  id     String @id @default(uuid())
+  userId String
+
+  codeHash  String
+  expiresAt DateTime
+
+  attempts Int     @default(0)
+  used     Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Task {
+  id          String @id @default(uuid())
+  name        String
+  category    String
+  description String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userTasks UserTask[]
+
+  @@index([category])
+}
+
+model UserTask {
+  id     String @id @default(uuid())
+  userId String
+  taskId String
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, taskId])
+  @@index([userId])
+  @@index([taskId])
+}

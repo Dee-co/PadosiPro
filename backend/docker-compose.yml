@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: padosipro-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: padosipro
+      POSTGRES_PASSWORD: padosipro_password
+      POSTGRES_DB: padosipro
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
