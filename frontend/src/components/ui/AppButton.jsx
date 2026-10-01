@@ -1,176 +1,142 @@
 import React from 'react';
-import {ActivityIndicator, Pressable, View} from 'react-native';
-
+import {ActivityIndicator, TouchableOpacity, View} from 'react-native';
 import AppText from './AppText';
 import {colors} from '../../theme';
+
+const SIZES = {
+  sm: {height: 44, paddingHorizontal: 16, borderRadius: 10, icon: 42},
+  md: {height: 54, paddingHorizontal: 20, borderRadius: 12, icon: 48},
+  lg: {height: 60, paddingHorizontal: 24, borderRadius: 14, icon: 58},
+};
+const getVariantStyles = variant => {
+  switch (variant) {
+    case 'outline':
+      return {
+        backgroundColor: 'transparent',
+        borderColor: colors.primary,
+        textColor: colors.primary,
+      };
+    case 'ghost':
+      return {
+        backgroundColor: 'transparent',
+        borderColor: 'transparent',
+        textColor: colors.primary,
+      };
+    case 'danger':
+      return {
+        backgroundColor: colors.error,
+        borderColor: colors.error,
+        textColor: colors.textPrimary,
+      };
+    case 'icon':
+      return {
+        backgroundColor: colors.surfaceLight,
+        borderColor: colors.border,
+        textColor: colors.primary,
+      };
+    case 'filled':
+    default:
+      return {
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
+        textColor: colors.black,
+      };
+  }
+};
 
 const AppButton = ({
   title,
   onPress,
-  variant = 'filled',
-
+  variant = 'filled', 
+  size = 'md', 
   loading = false,
   disabled = false,
-
   leftIcon,
   rightIcon,
-
   icon,
-
   fullWidth = true,
-
-  size = 'md',
-
   style,
   textStyle,
-
   ...props
 }) => {
-  const isFilled = variant === 'filled';
-  const isOutline = variant === 'outline';
   const isIcon = variant === 'icon';
-
-  const isDisabled = disabled || loading;
-
-  const buttonSize = {
-    sm: {
-      minHeight: 40,
-      paddingHorizontal: 14,
-      borderRadius: 10,
-    },
-
-    md: {
-      minHeight: 52,
-      paddingHorizontal: 20,
-      borderRadius: 12,
-    },
-
-    lg: {
-      minHeight: 58,
-      paddingHorizontal: 24,
-      borderRadius: 14,
-    },
-  };
-
-  // -----------------------------
-  // Icon Only Button
-  // -----------------------------
-
-  if (isIcon) {
+  const isDisabled = disabled || loading;  const sizeConfig = SIZES[size] || SIZES.md;
+  const v = getVariantStyles(variant);  const baseStyle = {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: v.borderColor,
+    backgroundColor: v.backgroundColor,
+    opacity: isDisabled ? 0.5 : 1,
+  };  if (isIcon) {
     return (
-      <Pressable
+      <TouchableOpacity
+        activeOpacity={0.75}
+        accessibilityRole="button"
+        accessibilityState={{disabled: isDisabled, busy: loading}}
+        {...props}
         onPress={onPress}
         disabled={isDisabled}
-        style={({pressed}) => [
+        style={[
+          baseStyle,
           {
-            width: size === 'sm' ? 40 : size === 'lg' ? 58 : 48,
-            height: size === 'sm' ? 40 : size === 'lg' ? 58 : 48,
-            borderRadius: 12,
-
-            alignItems: 'center',
-            justifyContent: 'center',
-
-            backgroundColor: colors.surface,
-
-            borderWidth: 1,
-            borderColor: colors.border,
-
-            opacity: isDisabled
-              ? 0.5
-              : pressed
-              ? 0.75
-              : 1,
+            width: sizeConfig.icon,
+            height: sizeConfig.icon,
+            borderRadius: sizeConfig.borderRadius,
+            alignSelf: 'flex-start',
           },
           style,
-        ]}
-        {...props}>
+        ]}>
         {loading ? (
-          <ActivityIndicator
-            size="small"
-            color={colors.primary}
-          />
+          <ActivityIndicator size="small" color={v.textColor} />
         ) : (
           icon
         )}
-      </Pressable>
+      </TouchableOpacity>
     );
   }
-
-  // -----------------------------
-  // Filled / Outline Button
-  // -----------------------------
-
-  const backgroundColor = isFilled
-    ? colors.primary
-    : colors.transparent;
-
-  const borderColor = isOutline
-    ? colors.primary
-    : colors.primary;
-
-  const textColor = isFilled
-    ? colors.black
-    : colors.primary;
-
   return (
-    <Pressable
+    <TouchableOpacity
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{disabled: isDisabled, busy: loading}}
+      {...props}
       onPress={onPress}
       disabled={isDisabled}
-      style={({pressed}) => [
+      style={[
+        baseStyle,
         {
-          ...buttonSize[size],
-
-          borderWidth: 1,
-          borderColor,
-
-          backgroundColor,
-
           flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-
-          opacity: isDisabled
-            ? 0.5
-            : pressed
-            ? 0.85
-            : 1,
-
-          alignSelf: fullWidth
-            ? 'stretch'
-            : 'flex-start',
+          height: sizeConfig.height,
+          paddingHorizontal: sizeConfig.paddingHorizontal,
+          borderRadius: sizeConfig.borderRadius,
+          width: fullWidth ? '100%' : undefined,
+          alignSelf: fullWidth ? 'stretch' : 'flex-start',
         },
         style,
-      ]}
-      {...props}>
-
+      ]}>
       {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={textColor}
-        />
+        <ActivityIndicator size="small" color={v.textColor} />
       ) : (
         <>
-          {leftIcon && (
-            <View style={{marginRight: 8}}>
-              {leftIcon}
-            </View>
-          )}
-
-          <AppText
+          {leftIcon ? (
+            <View style={{marginRight: 8}}>{leftIcon}</View>
+          ) : null}          <AppText
             variant="button"
-            color={textColor}
-            style={textStyle}>
+            color={v.textColor}
+            numberOfLines={1}
+            style={[
+              {includeFontPadding: false, textAlignVertical: 'center'},
+              textStyle,
+            ]}>
             {title}
-          </AppText>
-
-          {rightIcon && (
-            <View style={{marginLeft: 8}}>
-              {rightIcon}
-            </View>
-          )}
+          </AppText>          {rightIcon ? (
+            <View style={{marginLeft: 8}}>{rightIcon}</View>
+          ) : null}
         </>
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

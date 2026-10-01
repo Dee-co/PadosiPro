@@ -1,23 +1,32 @@
 import React from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {colors} from '../../theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '../../theme';
 const AppSafeAreaView = ({
   children,
+  top = true,
+  right = true,
+  bottom = true,
+  left = true,
+  className = '',
   style,
-  edges = ['top', 'right', 'bottom', 'left'],
-  ...props
 }) => {
+  const edges = [
+    ...(top ? ['top'] : []),
+    ...(right ? ['right'] : []),
+    ...(bottom ? ['bottom'] : []),
+    ...(left ? ['left'] : []),
+  ];
   return (
     <SafeAreaView
       edges={edges}
+      className={`flex-1 ${className}`}
       style={[
         {
-          flex: 1,
           backgroundColor: colors.background,
         },
         style,
       ]}
-      {...props}>
+    >
       {children}
     </SafeAreaView>
   );
