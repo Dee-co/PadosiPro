@@ -1,24 +1,19 @@
-# Environment
+node_modules/
 .env
 .env.*
 !.env.example
 
-# Dependencies
-node_modules/
-
-# Build
 dist/
 build/
+.expo/
+.web/
 
-# Prisma generated files
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/ios/Pods/
+
 backend/generated/prisma/
 
-# Logs
 *.log
-
-# OS
 .DS_Store
-
-# IDE
-.vscode/
-.idea/
