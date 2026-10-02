@@ -317,9 +317,52 @@ export const login = async (req, res) => {
       });
     }
     if (!user.isEmailVerified) {
+      const latestOtp = await prisma.emailOtp.findFirst({
+        where: {
+          userId: user.id,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      let shouldSendOtp = true;
+      if (latestOtp) {
+        const elapsedSeconds =
+          (new Date().getTime() - latestOtp.createdAt.getTime()) / 1000;
+
+        if (elapsedSeconds < 30) {
+          shouldSendOtp = false;
+        }
+      }
+      if (shouldSendOtp) {
+        await prisma.emailOtp.updateMany({
+          where: {
+            userId: user.id,
+            used: false,
+          },
+          data: {
+            used: true,
+          },
+        });
+        const otp = generateOtp();
+        const codeHash = await hasOtp(otp);
+        const expiresAt = getOtpExpiry();
+        await prisma.emailOtp.create({
+          data: {
+            userId: user.id,
+            codeHash,
+            expiresAt,
+            attempts: 0,
+            used: false,
+          },
+        });
+        console.log("Login OTP generated:", normalizedEmail, otp);
+        await sendOtpEmail(normalizedEmail, otp);
+      }
       return res.status(403).json({
         success: false,
         message: "Please verify your email before logging in",
+        code: "EMAIL_NOT_VERIFIED",
       });
     }
     const accessToken = generateAccessToken(user);

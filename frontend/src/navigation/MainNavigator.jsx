@@ -1,17 +1,16 @@
 import React from 'react';
-import {View, Pressable} from 'react-native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {
-  Home,
-  BriefcaseBusiness,
-  UserRound,
-} from 'lucide-react-native';
-import HomeScreen from '../screens/main/HomeScreen'
-import ServicesScreen from '../screens/main/ServicesScreen'
-import AppText from '../components/ui/AppText';
-import {colors} from '../theme';
+import { Pressable } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Home, BriefcaseBusiness, UserRound } from 'lucide-react-native';
+import HomeScreen from '../screens/main/HomeScreen';
+import ServicesScreen from '../screens/main/ServicesScreen';
+import AccountProfileScreen from '../screens/main/ProfileScreen';
+import EditProfileScreen from '../screens/onboarding/ProfileScreen';
+import { colors } from '../theme';
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 const NoFeedbackTabButton = ({
   children,
   onPress,
@@ -29,20 +28,12 @@ const NoFeedbackTabButton = ({
     accessibilityLabel={accessibilityLabel}
     accessibilityState={accessibilityState}
     android_ripple={null}
-    style={style}>
+    style={style}
+  >
     {children}
   </Pressable>
 );
-
-const PlaceholderScreen = ({title}) => {
-  return (
-    <View className="flex-1 bg-background items-center justify-center">
-      <AppText variant="heading">{title}</AppText>
-    </View>
-  );
-};
-const ProfileScreen = () => <PlaceholderScreen title="Profile" />;
-const MainNavigator = () => {
+const MainTabs = () => {
   const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
@@ -69,17 +60,14 @@ const MainNavigator = () => {
         tabBarIconStyle: {
           marginTop: 2,
         },
-      }}>
+      }}
+    >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarIcon: ({color, focused}) => (
-            <Home
-              size={22}
-              color={color}
-              strokeWidth={focused ? 2.5 : 2}
-            />
+          tabBarIcon: ({ color, focused }) => (
+            <Home size={22} color={color} strokeWidth={focused ? 2.5 : 2} />
           ),
         }}
       />
@@ -87,7 +75,7 @@ const MainNavigator = () => {
         name="Services"
         component={ServicesScreen}
         options={{
-          tabBarIcon: ({color, focused}) => (
+          tabBarIcon: ({ color, focused }) => (
             <BriefcaseBusiness
               size={22}
               color={color}
@@ -98,9 +86,9 @@ const MainNavigator = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={AccountProfileScreen}
         options={{
-          tabBarIcon: ({color, focused}) => (
+          tabBarIcon: ({ color, focused }) => (
             <UserRound
               size={22}
               color={color}
@@ -112,5 +100,16 @@ const MainNavigator = () => {
     </Tab.Navigator>
   );
 };
-
+const MainNavigator = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    </Stack.Navigator>
+  );
+};
 export default MainNavigator;

@@ -1,11 +1,10 @@
 import React from 'react';
 import {TextInput, View, Pressable} from 'react-native';
-
 import AppText from './AppText';
 import {colors, fonts} from '../../theme';
-
 const AppInput = ({
   label,
+  required = false,
   error,
   variant = 'default',
   leftIcon,
@@ -19,12 +18,11 @@ const AppInput = ({
   ...props
 }) => {
   const isFilled = variant === 'filled';
-
+  const hasError = Boolean(error);
   const getKeyboardType = () => {
     if (keyboardType) {
       return keyboardType;
     }
-
     switch (type) {
       case 'email':
         return 'email-address';
@@ -39,39 +37,45 @@ const AppInput = ({
         return 'default';
     }
   };
-
   const isPassword = type === 'password';
-
   return (
     <View style={{marginBottom: 16}}>
-      {/* Label */}
       {label && (
-        <AppText
-          variant="bodySmall"
-          style={{
-            fontFamily: fonts.semiBold,
-            marginBottom: 8,
-          }}>
-          {label}
-        </AppText>
-      )}
+        <View style={{flexDirection: 'row', marginBottom: 8}}>
+          <AppText
+            variant="bodySmall"
+            style={{
+              fontFamily: fonts.semiBold,
+            }}>
+            {label}
+          </AppText>
 
-      {/* Input Container */}
+          {required && (
+            <AppText
+              variant="bodySmall"
+              color={colors.error}
+              style={{
+                fontFamily: fonts.semiBold,
+                marginLeft: 3,
+              }}>
+              *
+            </AppText>
+          )}
+        </View>
+      )}
       <View
         style={{
           minHeight: 52,
           flexDirection: 'row',
           alignItems: 'center',
           borderWidth: 1,
-          borderColor: error ? colors.error : colors.border,
+          borderColor: hasError ? colors.error : colors.border,
           borderRadius: 12,
           backgroundColor: isFilled
             ? colors.surfaceLight
             : colors.surface,
           paddingHorizontal: 14,
         }}>
-        
-        {/* Left Icon */}
         {leftIcon && (
           <Pressable
             onPress={onLeftIconPress}
@@ -86,7 +90,6 @@ const AppInput = ({
           </Pressable>
         )}
 
-        {/* Input */}
         <TextInput
           value={value}
           onChangeText={onChangeText}
@@ -102,8 +105,6 @@ const AppInput = ({
           }}
           {...props}
         />
-
-        {/* Right Icon */}
         {rightIcon && (
           <Pressable
             onPress={onRightIconPress}
@@ -118,9 +119,7 @@ const AppInput = ({
           </Pressable>
         )}
       </View>
-
-      {/* Error */}
-      {error && (
+      {hasError && (
         <AppText
           variant="caption"
           color={colors.error}
@@ -133,5 +132,4 @@ const AppInput = ({
     </View>
   );
 };
-
 export default AppInput;

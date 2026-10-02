@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { ScrollView, TextInput, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { RefreshControl, ScrollView, TextInput, View } from 'react-native';
 import {
   Search,
   Wrench,
@@ -7,11 +7,21 @@ import {
   BriefcaseBusiness,
   MapPin,
 } from 'lucide-react-native';
+import Toast from 'react-native-toast-message';
+
 import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
+import AppText from '../../components/ui/AppText';
+import AppLoader from '../../components/ui/AppLoader';
 import TaskCard from '../../components/common/TaskCard';
 import CategoryFilter from '../../components/common/CategoryFilter';
+
 import { colors } from '../../theme';
-import AppText from '../../components/ui/AppText';
+import {
+  getTasks,
+  getSelectedTasks,
+  selectTasks,
+} from '../../services/taskService';
+
 const CATEGORIES = [
   {
     key: 'All',
@@ -39,58 +49,114 @@ const CATEGORIES = [
     icon: MapPin,
   },
 ];
-const TASKS = [
-  { id: '1', name: 'Plumbing', category: 'Home Services' },
-  { id: '2', name: 'Electrical Repair', category: 'Home Services' },
-  { id: '3', name: 'Home Cleaning', category: 'Home Services' },
-  { id: '4', name: 'AC Repair', category: 'Home Services' },
-  { id: '5', name: 'Carpentry', category: 'Home Services' },
-  { id: '6', name: 'Barber', category: 'Personal Services' },
-  { id: '7', name: 'Makeup Artist', category: 'Personal Services' },
-  { id: '8', name: 'Fitness Trainer', category: 'Personal Services' },
-  { id: '9', name: 'Yoga Trainer', category: 'Personal Services' },
-  { id: '10', name: 'Massage', category: 'Personal Services' },
-  { id: '11', name: 'Digital Marketing', category: 'Business Services' },
-  { id: '12', name: 'Accounting', category: 'Business Services' },
-  { id: '13', name: 'Graphic Design', category: 'Business Services' },
-  { id: '14', name: 'Web Development', category: 'Business Services' },
-  { id: '15', name: 'Business Consulting', category: 'Business Services' },
-  { id: '16', name: 'Delivery', category: 'Local Services' },
-  { id: '17', name: 'Laundry', category: 'Local Services' },
-  { id: '18', name: 'Car Wash', category: 'Local Services' },
-  { id: '19', name: 'Driver', category: 'Local Services' },
-  { id: '20', name: 'Pest Control', category: 'Local Services' },
-];
+
 const ServicesScreen = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
-  const [selectedTasks, setSelectedTasks] = useState(['1', '8', '11']);
+  const [tasks, setTasks] = useState([]);
+  const [selectedTasks, setSelectedTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const loadServices = useCallback(async (isRefresh = false) => {
+    try {
+      setError('');
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      const [tasksResponse, selectedResponse] = await Promise.all([
+        getTasks(),
+        getSelectedTasks(),
+      ]);
+      console.log('SERVICES TASKS RESPONSE:', tasksResponse);
+      console.log('SERVICES SELECTED RESPONSE:', selectedResponse);
+      const apiTasks = Array.isArray(tasksResponse?.data)
+        ? tasksResponse.data
+        : [];
+      const selectedData = selectedResponse?.data;
+      let selectedIds = [];
+      if (Array.isArray(selectedData)) {
+        selectedIds = selectedData;
+      } else if (Array.isArray(selectedData?.tasks)) {
+        selectedIds = selectedData.tasks.map(task =>
+          typeof task === 'object' ? task.id : task,
+        );
+      } else if (Array.isArray(selectedData?.selectedTasks)) {
+        selectedIds = selectedData.selectedTasks.map(task =>
+          typeof task === 'object' ? task.id : task,
+        );
+      } else if (Array.isArray(selectedData?.taskIds)) {
+        selectedIds = selectedData.taskIds;
+      }
+      setTasks(apiTasks);
+      setSelectedTasks(selectedIds.map(id => String(id)));
+    } catch (err) {
+      console.log('SERVICES LOAD ERROR:', err?.response?.data || err?.message);
+      setError(
+        err?.response?.data?.message ||
+          'Unable to load services. Please try again.',
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+  useEffect(() => {
+    loadServices();
+  }, [loadServices]);
   const filteredTasks = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return TASKS.filter(task => {
+    return tasks.filter(task => {
       const matchesCategory = category === 'All' || task.category === category;
-      const matchesSearch = !query || task.name.toLowerCase().includes(query);
+      const matchesSearch =
+        !query ||
+        task.name?.toLowerCase().includes(query) ||
+        task.description?.toLowerCase().includes(query);
       return matchesCategory && matchesSearch;
     });
-  }, [search, category]);
-  const toggleTask = taskId => {
-    setSelectedTasks(current => {
-      if (current.includes(taskId)) {
-        return current.filter(id => id !== taskId);
-      }
-      return [...current, taskId];
-    });
+  }, [tasks, search, category]);
+  const toggleTask = async taskId => {
+    const id = String(taskId);
+    const updatedSelection = selectedTasks.includes(id)
+      ? selectedTasks.filter(item => item !== id)
+      : [...selectedTasks, id];
+    setSelectedTasks(updatedSelection);
+    try {
+      setSaving(true);
+      await selectTasks(updatedSelection);
+      console.log('UPDATED SELECTED TASKS:', updatedSelection);
+    } catch (err) {
+      console.log('UPDATE TASK ERROR:', err?.response?.data || err?.message);
+      setSelectedTasks(selectedTasks);
+      Toast.show({
+        type: 'error',
+        text1: 'Unable to update service',
+        text2: err?.response?.data?.message || 'Please try again.',
+      });
+    } finally {
+      setSaving(false);
+    }
   };
+  if (loading) {
+    return (
+      <AppSafeAreaView bottom={false}>
+        <AppLoader fullScreen />
+      </AppSafeAreaView>
+    );
+  }
   return (
     <AppSafeAreaView bottom={false}>
       <View className="flex-1">
         <View className="px-6 pt-5">
-          <AppText variant="heading">Services</AppText>
+          <AppText variant="heading">Services</AppText>{' '}
           <AppText variant="body" color={colors.textSecondary} className="mt-2">
             Find services that match your needs
-          </AppText>
+          </AppText>{' '}
           <View className="mt-6 h-[52px] flex-row items-center rounded-xl border border-border bg-surface px-4">
-            <Search size={20} color={colors.textMuted} />
+            <Search size={20} color={colors.textMuted} />{' '}
             <TextInput
               value={search}
               onChangeText={setSearch}
@@ -111,22 +177,40 @@ const ServicesScreen = () => {
             />
           </View>
           <View className="mb-3 mt-6 flex-row items-center justify-between">
-            <AppText variant="title">Available services</AppText>
+            <View>
+              <AppText variant="title">Available services</AppText>
+              <AppText variant="caption" color={colors.textSecondary}>
+                {selectedTasks.length} selected
+              </AppText>
+            </View>
             <AppText variant="caption" color={colors.textSecondary}>
               {filteredTasks.length} results
             </AppText>
           </View>
         </View>
+        {error ? (
+          <View className="mx-6 mb-4 rounded-2xl border border-border bg-surface p-4">
+            <AppText variant="bodySmall" color={colors.error}>
+              {error}
+            </AppText>
+          </View>
+        ) : null}
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerClassName="px-6 pb-8"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => loadServices(true)}
+              tintColor={colors.primary}
+            />
+          }
         >
-          
           {filteredTasks.map(task => (
             <TaskCard
               key={task.id}
               task={task}
-              selected={selectedTasks.includes(task.id)}
+              selected={selectedTasks.includes(String(task.id))}
               onPress={() => toggleTask(task.id)}
             />
           ))}
@@ -148,8 +232,23 @@ const ServicesScreen = () => {
             </View>
           )}
         </ScrollView>
+        {saving ? (
+          <View
+            className="absolute bottom-4 self-center rounded-full px-4 py-2"
+            style={{
+              backgroundColor: colors.surfaceLight,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <AppText variant="caption" color={colors.primary}>
+              Saving changes...
+            </AppText>
+          </View>
+        ) : null}
       </View>
     </AppSafeAreaView>
   );
 };
+
 export default ServicesScreen;

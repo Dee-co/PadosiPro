@@ -1,8 +1,10 @@
-import React, {useMemo, useState} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
-  TextInput,
   View,
+  TextInput,
+  RefreshControl,
+  FlatList,
 } from 'react-native';
 import {
   Search,
@@ -11,288 +13,343 @@ import {
   UserRound,
   BriefcaseBusiness,
   MapPin,
+  RefreshCw,
+  Check,
 } from 'lucide-react-native';
-
+import Toast from 'react-native-toast-message';
+import { useAuth } from '../../context/AuthContext';
 import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
 import AppText from '../../components/ui/AppText';
 import AppButton from '../../components/ui/AppButton';
+import AppLoader from '../../components/ui/AppLoader';
 import TaskCard from '../../components/common/TaskCard';
 
-import {colors} from '../../theme';
-
-const TASKS = [
-  {
-    id: '1',
-    name: 'Plumbing',
-    category: 'Home Services',
-  },
-  {
-    id: '2',
-    name: 'Electrical Repair',
-    category: 'Home Services',
-  },
-  {
-    id: '3',
-    name: 'Home Cleaning',
-    category: 'Home Services',
-  },
-  {
-    id: '4',
-    name: 'AC Repair',
-    category: 'Home Services',
-  },
-  {
-    id: '5',
-    name: 'Carpentry',
-    category: 'Home Services',
-  },
-
-  {
-    id: '6',
-    name: 'Barber',
-    category: 'Personal Services',
-  },
-  {
-    id: '7',
-    name: 'Makeup Artist',
-    category: 'Personal Services',
-  },
-  {
-    id: '8',
-    name: 'Fitness Trainer',
-    category: 'Personal Services',
-  },
-  {
-    id: '9',
-    name: 'Yoga Trainer',
-    category: 'Personal Services',
-  },
-  {
-    id: '10',
-    name: 'Massage',
-    category: 'Personal Services',
-  },
-
-  {
-    id: '11',
-    name: 'Digital Marketing',
-    category: 'Business Services',
-  },
-  {
-    id: '12',
-    name: 'Accounting',
-    category: 'Business Services',
-  },
-  {
-    id: '13',
-    name: 'Graphic Design',
-    category: 'Business Services',
-  },
-  {
-    id: '14',
-    name: 'Web Development',
-    category: 'Business Services',
-  },
-  {
-    id: '15',
-    name: 'Business Consulting',
-    category: 'Business Services',
-  },
-
-  {
-    id: '16',
-    name: 'Delivery',
-    category: 'Local Services',
-  },
-  {
-    id: '17',
-    name: 'Laundry',
-    category: 'Local Services',
-  },
-  {
-    id: '18',
-    name: 'Car Wash',
-    category: 'Local Services',
-  },
-  {
-    id: '19',
-    name: 'Driver',
-    category: 'Local Services',
-  },
-  {
-    id: '20',
-    name: 'Pest Control',
-    category: 'Local Services',
-  },
-];
+import { colors, fonts } from '../../theme';
+import {
+  getTasks,
+  getSelectedTasks,
+  selectTasks,
+} from '../../services/taskService';
 
 const CATEGORY_CONFIG = {
   'Home Services': {
     icon: Wrench,
+    label: 'Home Services',
   },
   'Personal Services': {
     icon: UserRound,
+    label: 'Personal Services',
   },
   'Business Services': {
     icon: BriefcaseBusiness,
+    label: 'Business Services',
   },
   'Local Services': {
     icon: MapPin,
+    label: 'Local Services',
   },
 };
 
-const TaskSelectionScreen = ({navigation}) => {
-  const [search, setSearch] = useState('');
+const TaskSelectionScreen = ({ navigation }) => {
+  const [tasks, setTasks] = useState([]);
   const [selectedTasks, setSelectedTasks] = useState([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState('');
+  const loadTasks = async (isRefresh = false) => {
+    try {
+      setError('');
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      const [tasksResponse, selectedResponse] = await Promise.all([
+        getTasks(),
+        getSelectedTasks(),
+      ]);
+      console.log('TASKS RESPONSE:', tasksResponse);
+      console.log('SELECTED TASKS RESPONSE:', selectedResponse);
+      const apiTasks = Array.isArray(tasksResponse?.data)
+        ? tasksResponse.data
+        : [];
+      const selectedData = selectedResponse?.data;
+      let selectedIds = [];
+      if (Array.isArray(selectedData)) {
+        selectedIds = selectedData;
+      } else if (Array.isArray(selectedData?.tasks)) {
+        selectedIds = selectedData.tasks.map(task =>
+          typeof task === 'object' ? task.id : task,
+        );
+      } else if (Array.isArray(selectedData?.taskIds)) {
+        selectedIds = selectedData.taskIds;
+      }
+      setTasks(apiTasks);
+      setSelectedTasks(selectedIds.map(id => String(id)));
+    } catch (err) {
+      console.log('TASK LOAD ERROR:', err?.response?.data || err?.message);
+      setError(
+        err?.response?.data?.message ||
+          'Unable to load services. Please try again.',
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+  useEffect(() => {
+    loadTasks();
+  }, []);
   const filteredTasks = useMemo(() => {
     const query = search.trim().toLowerCase();
-
     if (!query) {
-      return TASKS;
+      return tasks;
     }
-
-    return TASKS.filter(task =>
-      task.name.toLowerCase().includes(query),
-    );
-  }, [search]);
+    return tasks.filter(task => {
+      return (
+        task.name?.toLowerCase().includes(query) ||
+        task.category?.toLowerCase().includes(query) ||
+        task.description?.toLowerCase().includes(query)
+      );
+    });
+  }, [tasks, search]);
   const groupedTasks = useMemo(() => {
     return filteredTasks.reduce((groups, task) => {
-      if (!groups[task.category]) {
-        groups[task.category] = [];
+      const category = task.category || 'Other';
+      if (!groups[category]) {
+        groups[category] = [];
       }
-      groups[task.category].push(task);
+      groups[category].push(task);
       return groups;
     }, {});
   }, [filteredTasks]);
   const toggleTask = taskId => {
-    setSelectedTasks(current => {
-      if (current.includes(taskId)) {
-        return current.filter(id => id !== taskId);
+    const id = String(taskId);
+    setSelectedTasks(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(item => item !== id);
       }
-      return [...current, taskId];
+      return [...prev, id];
     });
   };
-
+  const handleContinue = async () => {
+    if (selectedTasks.length === 0) {
+      Toast.show({
+        type: 'error',
+        text1: 'Select at least one service',
+        text2: 'Please choose the services you provide.',
+      });
+      return;
+    }
+    try {
+      setSaving(true);
+      console.log('SELECTING TASK IDS:', selectedTasks);
+      const response = await selectTasks(selectedTasks);
+      console.log('SELECT TASK RESPONSE:', response);
+      await updateUser({
+        isProfileCompleted: true,
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Services Saved',
+        text2: `${selectedTasks.length} service${
+          selectedTasks.length > 1 ? 's' : ''
+        } selected.`,
+      });
+    } catch (err) {
+      console.log('SELECT TASK ERROR:', err?.response?.data || err?.message);
+      Toast.show({
+        type: 'error',
+        text1: 'Unable to save services',
+        text2: err?.response?.data?.message || 'Please try again.',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+  if (loading) {
+    return (
+      <AppSafeAreaView>
+        <AppLoader fullScreen />
+      </AppSafeAreaView>
+    );
+  }
+  if (error && tasks.length === 0) {
+    return (
+      <AppSafeAreaView>
+        <View className="flex-1 items-center justify-center px-6">
+          <View className="w-16 h-16 rounded-full bg-surfaceLight items-center justify-center mb-5">
+            <RefreshCw size={28} color={colors.primary} />
+          </View>
+          <AppText variant="title" style={{ textAlign: 'center' }}>
+            Something went wrong
+          </AppText>
+          <AppText
+            variant="bodySmall"
+            color={colors.textSecondary}
+            style={{
+              textAlign: 'center',
+              marginTop: 8,
+              marginBottom: 24,
+            }}
+          >
+            {error}
+          </AppText>
+          <AppButton
+            title="Try Again"
+            onPress={() => loadTasks()}
+            fullWidth={false}
+            leftIcon={<RefreshCw size={18} color={colors.black} />}
+          />
+        </View>
+      </AppSafeAreaView>
+    );
+  }
   return (
     <AppSafeAreaView>
       <View className="flex-1">
-        <View className="px-6 pb-4 pt-5">
-          <AppText variant="heading">
-            Choose your services
-          </AppText>
+        <View className="px-6 pt-7 pb-4">
+          <AppText variant="heading">What services do you offer?</AppText>
           <AppText
             variant="body"
             color={colors.textSecondary}
-            className="mt-2">
-            Select the services you are interested in
+            style={{ marginTop: 8 }}
+          >
+            Select the services you provide to people nearby.
           </AppText>
-          <View className="mt-6 h-[52px] flex-row items-center rounded-xl border border-border bg-surface px-4">
-            <Search
-              size={20}
-              color={colors.textMuted}
-            />
+        </View>
+        <View className="px-6 mb-5">
+          <View
+            className="flex-row items-center bg-surface border border-border rounded-[14px] px-4"
+            style={{ height: 52 }}
+          >
+            <Search size={20} color={colors.textSecondary} />
             <TextInput
               value={search}
               onChangeText={setSearch}
               placeholder="Search services..."
               placeholderTextColor={colors.textMuted}
-              className="ml-3 flex-1 text-base text-textPrimary"
+              className="flex-1 ml-3"
               style={{
-                fontFamily: 'Eina01-Regular',
+                color: colors.textPrimary,
+                fontFamily: fonts.regular,
+                fontSize: 15,
               }}
             />
           </View>
         </View>
-        <ScrollView
+        <FlatList
+          data={filteredTasks}
+          keyExtractor={item => String(item.id)}
+          className="flex-1"
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingBottom: 180,
+          }}
           showsVerticalScrollIndicator={false}
-          contentContainerClassName="px-6 pb-32">
-          {Object.keys(groupedTasks).map(category => {
-            const CategoryIcon =
-              CATEGORY_CONFIG[category]?.icon;
-
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => loadTasks(true)}
+              tintColor={colors.primary}
+            />
+          }
+          renderItem={({ item, index }) => {
+            const isSelected = selectedTasks.includes(String(item.id));
+            const previousItem = filteredTasks[index - 1];
+            const showCategory =
+              !previousItem || previousItem.category !== item.category;
+            const config = CATEGORY_CONFIG[item.category];
+            const CategoryIcon = config?.icon || BriefcaseBusiness;
             return (
-              <View
-                key={category}
-                className="mb-7">
-                <View className="mb-3 flex-row items-center">
-                  <View className="mr-3 h-9 w-9 items-center justify-center rounded-lg bg-borderPrimary">
-                    {CategoryIcon && (
-                      <CategoryIcon
-                        size={18}
-                        color={colors.primary}
-                      />
-                    )}
+              <View>
+                {showCategory && (
+                  <View className="flex-row items-center mb-3 mt-2">
+                    <View className="w-9 h-9 rounded-[10px] bg-surfaceLight items-center justify-center mr-3">
+                      <CategoryIcon size={18} color={colors.primary} />
+                    </View>
+                    <View className="flex-1">
+                      <AppText variant="title">{item.category}</AppText>
+                      <AppText variant="caption" color={colors.textMuted}>
+                        {
+                          filteredTasks.filter(
+                            task => task.category === item.category,
+                          ).length
+                        }
+                        services
+                      </AppText>
+                    </View>
                   </View>
-                  <AppText variant="title">
-                    {category}
-                  </AppText>
-                </View>
-                {groupedTasks[category].map(task => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    selected={selectedTasks.includes(task.id)}
-                    onPress={() => toggleTask(task.id)}
-                  />
-                ))}
+                )}
+                <TaskCard
+                  task={item}
+                  selected={isSelected}
+                  onPress={() => toggleTask(item.id)}
+                />
+                {index === filteredTasks.length - 1 && <View className="h-4" />}
               </View>
             );
-          })}
-          {Object.keys(groupedTasks).length === 0 && (
-            <View className="items-center py-16">
-              <View className="h-14 w-14 items-center justify-center rounded-2xl bg-surfaceLight">
-                <Search
-                  size={24}
-                  color={colors.textMuted}
-                />
-              </View>
-
-              <AppText
-                variant="title"
-                className="mt-4">
+          }}
+          ListEmptyComponent={
+            <View className="items-center justify-center py-20">
+              <Search size={36} color={colors.textMuted} />
+              <AppText variant="title" style={{ marginTop: 16 }}>
                 No services found
               </AppText>
-
               <AppText
                 variant="bodySmall"
                 color={colors.textSecondary}
-                className="mt-2 text-center">
-                Try a different search
+                style={{
+                  marginTop: 6,
+                  textAlign: 'center',
+                }}
+              >
+                Try searching with a different keyword.
               </AppText>
             </View>
-          )}
-        </ScrollView>
-        <View className="absolute bottom-0 left-0 right-0 border-t border-border bg-background px-6 pb-5 pt-3">
-          <View className="mb-3 flex-row items-center justify-between">
-            <AppText
-              variant="bodySmall"
-              color={colors.textSecondary}>
-              {selectedTasks.length} services selected
-            </AppText>
-
-            {selectedTasks.length > 0 && (
-              <AppText
-                variant="bodySmall"
-                color={colors.primary}>
-                Ready to continue
+          }
+        />
+        <View
+          className="absolute bottom-0 left-0 right-0 px-6 pt-4"
+          style={{
+            paddingBottom: 24,
+            backgroundColor: colors.background,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+          }}
+        >
+          <View className="flex-row items-center justify-between mb-3">
+            <View>
+              <AppText variant="bodySmall">Selected services</AppText>
+              <AppText variant="title" color={colors.primary}>
+                {selectedTasks.length}
               </AppText>
-            )}
+            </View>
+            {selectedTasks.length > 0 ? (
+              <View className="flex-row items-center">
+                <Check size={16} color={colors.primary} />
+                <AppText
+                  variant="bodySmall"
+                  color={colors.primary}
+                  style={{ marginLeft: 5 }}
+                >
+                  Ready to continue
+                </AppText>
+              </View>
+            ) : null}
           </View>
-
           <AppButton
-            title="Continue"
-            disabled={selectedTasks.length === 0}
+            title={saving ? 'Saving...' : 'Confirm Services'}
+            loading={saving}
+            disabled={saving}
+            onPress={handleContinue}
             rightIcon={
-              <ArrowRight
-                size={20}
-                color={colors.black}
-                strokeWidth={2.5}
-              />
+              !saving ? (
+                <ArrowRight size={20} color={colors.black} strokeWidth={2.5} />
+              ) : null
             }
-            onPress={() => {
-              console.log('Selected:', selectedTasks);
-              navigation.replace('Main');
-            }}
           />
         </View>
       </View>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../theme';
 const AppSafeAreaView = ({
@@ -17,18 +18,21 @@ const AppSafeAreaView = ({
     ...(left ? ['left'] : []),
   ];
   return (
-    <SafeAreaView
-      edges={edges}
-      className={`flex-1 ${className}`}
-      style={[
-        {
-          backgroundColor: colors.background,
-        },
-        style,
-      ]}
-    >
-      {children}
-    </SafeAreaView>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <SafeAreaView
+        edges={edges}
+        className={`flex-1 ${className}`}
+        style={[
+          {
+            backgroundColor: colors.background,
+          },
+          style,
+        ]}
+      >
+        {children}
+      </SafeAreaView>
+    </>
   );
 };
 

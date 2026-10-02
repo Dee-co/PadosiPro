@@ -7,17 +7,88 @@ import {
   Pressable,
 } from 'react-native';
 import { Mail, Lock, Eye, ArrowRight } from 'lucide-react-native';
-
 import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
 import AppText from '../../components/ui/AppText';
 import AppInput from '../../components/ui/AppInput';
 import AppButton from '../../components/ui/AppButton';
 import { colors, fonts } from '../../theme';
-
+import { loginUser } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
+import Toast from 'react-native-toast-message';
 const LoginScreen = ({ navigation }) => {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState({
+    email: '',
+    password: '',
+    general: '',
+  });
+  const handleLogin = async () => {
+    setError({
+      email: '',
+      password: '',
+      general: '',
+    });
+    const trimmedEmail = email.trim();
+    const newError = {
+      email: '',
+      password: '',
+      general: '',
+    };
+    if (!trimmedEmail) {
+      newError.email = 'Email is required.';
+    } else if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
+      newError.email = 'Please enter a valid email.';
+    }
+    if (!password) {
+      newError.password = 'Password is required.';
+    }
+    if (newError.email || newError.password) {
+      setError(newError);
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await loginUser({
+        email: trimmedEmail,
+        password,
+      });
+      console.log('LOGIN RESPONSE:', response);
+      await login({
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+        user: response.data.user,
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Login Successful',
+        text2: 'Welcome back to PadosiPro',
+      });
+    } catch (err) {
+      console.log('LOGIN ERROR:', err?.response?.data || err?.message);
+      const responseData = err?.response?.data;
+      const message =
+        responseData?.message ||
+        'Unable to login. Please check your credentials.';
+      const code = responseData?.code;
+      if (code === 'EMAIL_NOT_VERIFIED') {
+        navigation.navigate('VerifyOtp', {
+          email: trimmedEmail,
+        });
+        return;
+      }
+      setError({
+        email: '',
+        password: '',
+        general: message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <AppSafeAreaView>
       <KeyboardAvoidingView
@@ -30,7 +101,6 @@ const LoginScreen = ({ navigation }) => {
           contentContainerClassName="flex-grow px-6"
         >
           <View className="flex-1 justify-center py-10">
-            {/* Logo */}
             <View className="items-center mb-7">
               <View className="w-16 h-16 rounded-[20px] bg-primary items-center justify-center mb-5">
                 <AppText
@@ -60,21 +130,51 @@ const LoginScreen = ({ navigation }) => {
                 label="Email"
                 type="email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={text => {
+                  setEmail(text);
+                  if (error.email || error.general) {
+                    setError(prev => ({
+                      ...prev,
+                      email: '',
+                      general: '',
+                    }));
+                  }
+                }}
                 placeholder="Enter your email"
                 autoCapitalize="none"
                 autoCorrect={false}
-                leftIcon={<Mail size={20} color={colors.textSecondary} />}
+                error={error.email}
+                leftIcon={
+                  <Mail
+                    size={20}
+                    color={error.email ? colors.error : colors.textSecondary}
+                  />
+                }
               />
               <AppInput
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={text => {
+                  setPassword(text);
+                  if (error.password || error.general) {
+                    setError(prev => ({
+                      ...prev,
+                      password: '',
+                      general: '',
+                    }));
+                  }
+                }}
                 placeholder="Enter your password"
                 autoCapitalize="none"
                 autoCorrect={false}
-                leftIcon={<Lock size={20} color={colors.textSecondary} />}
+                error={error.password}
+                leftIcon={
+                  <Lock
+                    size={20}
+                    color={error.password ? colors.error : colors.textSecondary}
+                  />
+                }
                 rightIcon={
                   <Eye
                     size={20}
@@ -83,7 +183,18 @@ const LoginScreen = ({ navigation }) => {
                 }
                 onRightIconPress={() => setShowPassword(prev => !prev)}
               />
-              {/* Forgot Password */}
+              {error.general ? (
+                <AppText
+                  variant="caption"
+                  color={colors.error}
+                  style={{
+                    marginTop: -8,
+                    marginBottom: 12,
+                  }}
+                >
+                  {error.general}
+                </AppText>
+              ) : null}
               <Pressable
                 onPress={() => console.log('Forgot password')}
                 hitSlop={8}
@@ -100,7 +211,7 @@ const LoginScreen = ({ navigation }) => {
                 </AppText>
               </Pressable>
               <AppButton
-                title="Login"
+                title={loading ? 'Logging in...' : 'Login'}
                 rightIcon={
                   <ArrowRight
                     size={20}
@@ -108,9 +219,8 @@ const LoginScreen = ({ navigation }) => {
                     strokeWidth={2.5}
                   />
                 }
-                onPress={() => {
-                  console.log('Login');
-                }}
+                disabled={loading}
+                onPress={handleLogin}
               />
             </View>
             <View className="flex-row justify-center items-center mt-7">
