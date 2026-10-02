@@ -1,14 +1,14 @@
 import React from 'react';
 import {ActivityIndicator, View} from 'react-native';
-
-import {colors} from '../../theme';
-
+import {useTheme} from '../../context/ThemeContext';
 const AppLoader = ({
   size = 'large',
-  color = colors.primary,
+  color,
   fullScreen = false,
   style,
 }) => {
+  const {colors} = useTheme();
+  const indicatorColor = color || colors.primary;
   if (fullScreen) {
     return (
       <View
@@ -23,12 +23,11 @@ const AppLoader = ({
         ]}>
         <ActivityIndicator
           size={size}
-          color={color}
+          color={indicatorColor}
         />
       </View>
     );
   }
-
   return (
     <View
       style={[
@@ -41,7 +40,7 @@ const AppLoader = ({
       ]}>
       <ActivityIndicator
         size={size}
-        color={color}
+        color={indicatorColor}
       />
     </View>
   );

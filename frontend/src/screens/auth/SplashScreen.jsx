@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
 import AppText from '../../components/ui/AppText';
 import AppLoader from '../../components/ui/AppLoader';
-import { colors } from '../../theme';
+import { useTheme } from '../../context/ThemeContext';
+import PadosiProLogo from '../../assets/images/padosipro-logo.png';
 const SplashScreen = ({ navigation }) => {
+  const { colors } = useTheme();
   useEffect(() => {
     const timer = setTimeout(() => {
       navigation.replace('Login');
@@ -26,19 +28,21 @@ const SplashScreen = ({ navigation }) => {
             width: 72,
             height: 72,
             borderRadius: 22,
-            backgroundColor: colors.primary,
+            borderWidth: 2,
+            borderColor: colors.primary,
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: 20,
           }}
         >
-          <AppText
-            variant="heading"
-            color={colors.black}
-            style={{ fontSize: 30 }}
-          >
-            P
-          </AppText>
+          <Image
+            source={PadosiProLogo}
+            style={{
+              width: 46,
+              height: 46,
+              resizeMode: 'contain',
+            }}
+          />
         </View>
         <AppText variant="heading">PadosiPro</AppText>
         <AppText

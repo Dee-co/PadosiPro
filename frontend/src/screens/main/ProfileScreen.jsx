@@ -14,11 +14,12 @@ import {
 import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
 import AppText from '../../components/ui/AppText';
 import AppButton from '../../components/ui/AppButton';
-import { colors } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../context/ThemeContext';
 
 const ProfileScreen = () => {
+  const { colors } = useTheme();
   const { user, logout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
   const navigation = useNavigation();

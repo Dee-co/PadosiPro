@@ -8,9 +8,11 @@ import HomeScreen from '../screens/main/HomeScreen';
 import ServicesScreen from '../screens/main/ServicesScreen';
 import AccountProfileScreen from '../screens/main/ProfileScreen';
 import EditProfileScreen from '../screens/onboarding/ProfileScreen';
-import { colors } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
 const NoFeedbackTabButton = ({
   children,
   onPress,
@@ -33,8 +35,10 @@ const NoFeedbackTabButton = ({
     {children}
   </Pressable>
 );
+
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   return (
     <Tab.Navigator
       initialRouteName="Home"
@@ -100,6 +104,7 @@ const MainTabs = () => {
     </Tab.Navigator>
   );
 };
+
 const MainNavigator = () => {
   return (
     <Stack.Navigator
@@ -112,4 +117,5 @@ const MainNavigator = () => {
     </Stack.Navigator>
   );
 };
+
 export default MainNavigator;

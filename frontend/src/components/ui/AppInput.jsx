@@ -1,7 +1,8 @@
 import React from 'react';
 import {TextInput, View, Pressable} from 'react-native';
 import AppText from './AppText';
-import {colors, fonts} from '../../theme';
+import {fonts} from '../../theme';
+import {useTheme} from '../../context/ThemeContext';
 const AppInput = ({
   label,
   required = false,
@@ -17,6 +18,7 @@ const AppInput = ({
   keyboardType,
   ...props
 }) => {
+  const {colors} = useTheme();
   const isFilled = variant === 'filled';
   const hasError = Boolean(error);
   const getKeyboardType = () => {
@@ -37,6 +39,7 @@ const AppInput = ({
         return 'default';
     }
   };
+
   const isPassword = type === 'password';
   return (
     <View style={{marginBottom: 16}}>
@@ -49,7 +52,6 @@ const AppInput = ({
             }}>
             {label}
           </AppText>
-
           {required && (
             <AppText
               variant="bodySmall"
@@ -105,6 +107,7 @@ const AppInput = ({
           }}
           {...props}
         />
+
         {rightIcon && (
           <Pressable
             onPress={onRightIconPress}
@@ -119,6 +122,7 @@ const AppInput = ({
           </Pressable>
         )}
       </View>
+
       {hasError && (
         <AppText
           variant="caption"
@@ -132,4 +136,5 @@ const AppInput = ({
     </View>
   );
 };
+
 export default AppInput;

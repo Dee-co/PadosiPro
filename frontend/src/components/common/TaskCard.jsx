@@ -1,9 +1,10 @@
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import { Check } from 'lucide-react-native';
-import { colors } from '../../theme';
 import AppText from '../ui/AppText';
+import { useTheme } from '../../context/ThemeContext';
 const TaskCard = ({ task, selected = false, onPress }) => {
+  const {colors} = useTheme();
   return (
     <Pressable
       onPress={onPress}

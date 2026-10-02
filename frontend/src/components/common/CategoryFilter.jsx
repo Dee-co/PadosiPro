@@ -1,13 +1,15 @@
 import React from 'react';
 import { Pressable, ScrollView } from 'react-native';
 import AppText from '../ui/AppText';
-import { colors } from '../../theme';
+import { useTheme } from '../../context/ThemeContext';
+
 const CategoryFilter = ({
   categories = [],
   selectedCategory,
   onSelect,
   showIcons = false,
 }) => {
+  const {colors} = useTheme();
   return (
     <ScrollView
       horizontal

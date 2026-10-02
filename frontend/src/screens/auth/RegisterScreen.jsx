@@ -8,10 +8,12 @@ import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
 import AppText from '../../components/ui/AppText';
 import AppInput from '../../components/ui/AppInput';
 import AppButton from '../../components/ui/AppButton';
-import { colors, fonts } from '../../theme';
+import { fonts } from '../../theme';
 import { registerUser } from '../../services/authService';
+import { useTheme } from '../../context/ThemeContext';
 
 const RegisterScreen = ({ navigation }) => {
+  const {colors} = useTheme()
   const [form, setForm] = useState({
     email: '',
     password: '',

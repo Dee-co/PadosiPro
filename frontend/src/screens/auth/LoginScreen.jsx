@@ -5,17 +5,21 @@ import {
   ScrollView,
   View,
   Pressable,
+  Image,
 } from 'react-native';
 import { Mail, Lock, Eye, ArrowRight } from 'lucide-react-native';
 import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
 import AppText from '../../components/ui/AppText';
 import AppInput from '../../components/ui/AppInput';
 import AppButton from '../../components/ui/AppButton';
-import { colors, fonts } from '../../theme';
+import { fonts } from '../../theme';
+import { useTheme } from '../../context/ThemeContext';
 import { loginUser } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import Toast from 'react-native-toast-message';
+import PadosiProLogo from '../../assets/images/padosipro-logo.png';
 const LoginScreen = ({ navigation }) => {
+  const { colors } = useTheme();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -102,17 +106,26 @@ const LoginScreen = ({ navigation }) => {
         >
           <View className="flex-1 justify-center py-10">
             <View className="items-center mb-7">
-              <View className="w-16 h-16 rounded-[20px] bg-primary items-center justify-center mb-5">
-                <AppText
-                  variant="heading"
-                  color={colors.black}
+              <View
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: 22,
+                  borderWidth: 2,
+                  borderColor: colors.primary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                }}
+              >
+                <Image
+                  source={PadosiProLogo}
                   style={{
-                    fontSize: 28,
-                    lineHeight: 34,
+                    width: 46,
+                    height: 46,
+                    resizeMode: 'contain',
                   }}
-                >
-                  P
-                </AppText>
+                />
               </View>
               <AppText variant="heading" className="text-center">
                 Welcome back
@@ -195,21 +208,6 @@ const LoginScreen = ({ navigation }) => {
                   {error.general}
                 </AppText>
               ) : null}
-              <Pressable
-                onPress={() => console.log('Forgot password')}
-                hitSlop={8}
-                className="self-end -mt-1 mb-5"
-              >
-                <AppText
-                  variant="bodySmall"
-                  color={colors.primary}
-                  style={{
-                    fontFamily: fonts.semiBold,
-                  }}
-                >
-                  Forgot password?
-                </AppText>
-              </Pressable>
               <AppButton
                 title={loading ? 'Logging in...' : 'Login'}
                 rightIcon={
@@ -219,6 +217,7 @@ const LoginScreen = ({ navigation }) => {
                     strokeWidth={2.5}
                   />
                 }
+                className='mt-2'
                 disabled={loading}
                 onPress={handleLogin}
               />

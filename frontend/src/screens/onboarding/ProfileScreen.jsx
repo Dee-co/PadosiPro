@@ -14,10 +14,11 @@ import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
 import AppText from '../../components/ui/AppText';
 import AppInput from '../../components/ui/AppInput';
 import AppButton from '../../components/ui/AppButton';
-import {colors} from '../../theme';
 import {updateProfile} from '../../services/authService';
 import {useAuth} from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 const ProfileScreen = ({navigation, route}) => {
+  const {colors} = useTheme()
   const {user, updateUser} = useAuth();
   const isEditMode = route?.params?.isEditMode === true;
   const [name, setName] = useState('');

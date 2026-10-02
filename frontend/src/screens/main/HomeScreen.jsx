@@ -8,14 +8,17 @@ import {
   UserRound,
   BriefcaseBusiness,
   MapPin,
+  Sun,
+  Moon,
 } from 'lucide-react-native';
 import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
 import AppText from '../../components/ui/AppText';
 import AppLoader from '../../components/ui/AppLoader';
-import { colors } from '../../theme';
 import { getSelectedTasks } from '../../services/taskService';
 import { useAuth } from '../../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../../context/ThemeContext';
+import AppButton from '../../components/ui/AppButton';
 const getCategoryIcon = category => {
   switch (category) {
     case 'Home Services':
@@ -31,6 +34,7 @@ const getCategoryIcon = category => {
   }
 };
 const HomeScreen = ({ navigation }) => {
+  const { colors, isDark, toggleTheme } = useTheme();
   const { user } = useAuth();
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -92,12 +96,23 @@ const HomeScreen = ({ navigation }) => {
             {firstName}
           </AppText>
         </View>
-        <Pressable
-          className="w-11 h-11 rounded-xl bg-surfaceLight border border-border items-center justify-center"
-          onPress={() => console.log('Notifications')}
-        >
-          <Bell size={21} color={colors.textPrimary} />
-        </Pressable>
+        <AppButton
+          variant="icon"
+          size="sm"
+          onPress={toggleTheme}
+          icon={
+            isDark ? (
+              <Sun size={21} color={colors.primary} strokeWidth={2.2} />
+            ) : (
+              <Moon size={21} color={colors.textPrimary} strokeWidth={2.2} />
+            )
+          }
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+          }}
+        />
       </View>
       <Pressable
         className="flex-row items-center h-[52px] bg-surface border border-border rounded-xl px-4 mt-6"
@@ -119,26 +134,33 @@ const HomeScreen = ({ navigation }) => {
             Services you've selected
           </AppText>
         </View>
-        <Pressable
+        <AppButton
+          title="View all"
+          variant="ghost"
+          size="sm"
+          fullWidth={false}
+          rightIcon={<ChevronRight size={17} color={colors.primary} />}
           onPress={() => navigation.navigate('Services')}
-          className="flex-row items-center"
-        >
-          <AppText variant="bodySmall" color={colors.primary}>
-            View all
-          </AppText>
-          <ChevronRight size={17} color={colors.primary} />
-        </Pressable>
+          style={{
+            height: 32,
+            paddingHorizontal: 0,
+            borderWidth: 0,
+          }}
+          textStyle={{
+            fontSize: 14,
+          }}
+        />
       </View>
       {error ? (
         <View className="bg-surface border border-border rounded-2xl p-5 mb-4">
           <AppText variant="bodySmall" color={colors.error}>
             {error}
           </AppText>
-          <Pressable onPress={() => loadSelectedTasks()} className="mt-3">
+          <AppButton onPress={() => loadSelectedTasks()} className="mt-3">
             <AppText variant="bodySmall" color={colors.primary}>
               Try again
             </AppText>
-          </Pressable>
+          </AppButton>
         </View>
       ) : null}
       {!error && selectedTasks.length === 0 ? (
@@ -159,15 +181,23 @@ const HomeScreen = ({ navigation }) => {
           >
             Select services you provide to get started.
           </AppText>
-          <Pressable
+          <AppButton
+            title="Explore services"
+            variant="ghost"
+            size="sm"
+            fullWidth={false}
+            rightIcon={<ChevronRight size={17} color={colors.primary} />}
             onPress={() => navigation.navigate('Services')}
-            className="flex-row items-center mt-4"
-          >
-            <AppText variant="bodySmall" color={colors.primary}>
-              Explore services
-            </AppText>
-            <ChevronRight size={17} color={colors.primary} />
-          </Pressable>
+            style={{
+              height: 32,
+              paddingHorizontal: 0,
+              borderWidth: 0,
+              marginTop: 16,
+            }}
+            textStyle={{
+              fontSize: 14,
+            }}
+          />
         </View>
       ) : null}
     </>
@@ -180,7 +210,7 @@ const HomeScreen = ({ navigation }) => {
         onPress={() => console.log('Task:', item.name)}
       >
         <View className="w-12 h-12 rounded-xl bg-borderPrimary items-center justify-center">
-          <Icon size={22} color={colors.primary} />
+          <Icon size={22} color={colors.white} />
         </View>
         <View className="flex-1 ml-4 mr-2">
           <AppText variant="title">{item.name}</AppText>

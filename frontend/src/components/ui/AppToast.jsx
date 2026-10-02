@@ -2,8 +2,10 @@ import React from 'react';
 import {View} from 'react-native';
 import {CheckCircle, AlertCircle, Info} from 'lucide-react-native';
 import AppText from './AppText';
-import {colors, fonts} from '../../theme';
+import { fonts} from '../../theme';
+import { useTheme } from '../../context/ThemeContext';
 const AppToast = ({type = 'success', text1, text2}) => {
+  const {colors} = useTheme()
   const config = {
     success: {
       icon: CheckCircle,

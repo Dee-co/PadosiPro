@@ -15,12 +15,12 @@ import AppLoader from '../../components/ui/AppLoader';
 import TaskCard from '../../components/common/TaskCard';
 import CategoryFilter from '../../components/common/CategoryFilter';
 
-import { colors } from '../../theme';
 import {
   getTasks,
   getSelectedTasks,
   selectTasks,
 } from '../../services/taskService';
+import { useTheme } from '../../context/ThemeContext';
 
 const CATEGORIES = [
   {
@@ -51,6 +51,7 @@ const CATEGORIES = [
 ];
 
 const ServicesScreen = () => {
+  const { colors } = useTheme();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [tasks, setTasks] = useState([]);
@@ -59,6 +60,13 @@ const ServicesScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const cardStyle = {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  };
+
   const loadServices = useCallback(async (isRefresh = false) => {
     try {
       setError('');
@@ -104,9 +112,11 @@ const ServicesScreen = () => {
       setRefreshing(false);
     }
   }, []);
+
   useEffect(() => {
     loadServices();
   }, [loadServices]);
+
   const filteredTasks = useMemo(() => {
     const query = search.trim().toLowerCase();
     return tasks.filter(task => {
@@ -118,6 +128,7 @@ const ServicesScreen = () => {
       return matchesCategory && matchesSearch;
     });
   }, [tasks, search, category]);
+
   const toggleTask = async taskId => {
     const id = String(taskId);
     const updatedSelection = selectedTasks.includes(id)
@@ -140,6 +151,7 @@ const ServicesScreen = () => {
       setSaving(false);
     }
   };
+
   if (loading) {
     return (
       <AppSafeAreaView bottom={false}>
@@ -147,24 +159,29 @@ const ServicesScreen = () => {
       </AppSafeAreaView>
     );
   }
+
   return (
     <AppSafeAreaView bottom={false}>
       <View className="flex-1">
         <View className="px-6 pt-5">
-          <AppText variant="heading">Services</AppText>{' '}
+          <AppText variant="heading">Services</AppText>
           <AppText variant="body" color={colors.textSecondary} className="mt-2">
             Find services that match your needs
-          </AppText>{' '}
-          <View className="mt-6 h-[52px] flex-row items-center rounded-xl border border-border bg-surface px-4">
-            <Search size={20} color={colors.textMuted} />{' '}
+          </AppText>
+          <View
+            className="mt-6 h-[52px] flex-row items-center rounded-xl px-4"
+            style={cardStyle}
+          >
+            <Search size={20} color={colors.textMuted} />
             <TextInput
               value={search}
               onChangeText={setSearch}
               placeholder="Search services..."
               placeholderTextColor={colors.textMuted}
-              className="ml-3 flex-1 text-base text-textPrimary"
+              className="ml-3 flex-1 text-base"
               style={{
                 fontFamily: 'Eina01-Regular',
+                color: colors.textPrimary,
               }}
             />
           </View>
@@ -189,7 +206,7 @@ const ServicesScreen = () => {
           </View>
         </View>
         {error ? (
-          <View className="mx-6 mb-4 rounded-2xl border border-border bg-surface p-4">
+          <View className="mx-6 mb-4 rounded-2xl p-4" style={cardStyle}>
             <AppText variant="bodySmall" color={colors.error}>
               {error}
             </AppText>
@@ -203,6 +220,8 @@ const ServicesScreen = () => {
               refreshing={refreshing}
               onRefresh={() => loadServices(true)}
               tintColor={colors.primary}
+              colors={[colors.primary]}
+              progressBackgroundColor={colors.surface}
             />
           }
         >
@@ -216,7 +235,10 @@ const ServicesScreen = () => {
           ))}
           {filteredTasks.length === 0 && (
             <View className="items-center py-16">
-              <View className="h-14 w-14 items-center justify-center rounded-2xl bg-surfaceLight">
+              <View
+                className="h-14 w-14 items-center justify-center rounded-2xl"
+                style={{ backgroundColor: colors.surfaceLight }}
+              >
                 <Search size={24} color={colors.textMuted} />
               </View>
               <AppText variant="title" className="mt-4">

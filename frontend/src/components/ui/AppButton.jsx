@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 
 import AppText from './AppText';
-import {colors} from '../../theme';
+import { useTheme } from '../../context/ThemeContext';
 
 const SIZES = {
   sm: {
@@ -29,7 +29,7 @@ const SIZES = {
   },
 };
 
-const getVariantStyles = variant => {
+const getVariantStyles = (variant, colors) => {
   switch (variant) {
     case 'outline':
       return {
@@ -49,7 +49,7 @@ const getVariantStyles = variant => {
       return {
         backgroundColor: colors.error,
         borderColor: colors.error,
-        textColor: colors.textPrimary,
+        textColor: colors.white,
       };
 
     case 'icon':
@@ -84,11 +84,13 @@ const AppButton = ({
   textStyle,
   ...props
 }) => {
+  const {colors} = useTheme();
+
   const isIcon = variant === 'icon';
   const isDisabled = disabled || loading;
 
   const sizeConfig = SIZES[size] || SIZES.md;
-  const v = getVariantStyles(variant);
+  const v = getVariantStyles(variant, colors);
 
   const baseStyle = {
     alignItems: 'center',

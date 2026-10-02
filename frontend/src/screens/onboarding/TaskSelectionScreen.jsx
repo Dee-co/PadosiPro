@@ -24,12 +24,13 @@ import AppButton from '../../components/ui/AppButton';
 import AppLoader from '../../components/ui/AppLoader';
 import TaskCard from '../../components/common/TaskCard';
 
-import { colors, fonts } from '../../theme';
+import { fonts } from '../../theme';
 import {
   getTasks,
   getSelectedTasks,
   selectTasks,
 } from '../../services/taskService';
+import { useTheme } from '../../context/ThemeContext';
 
 const CATEGORY_CONFIG = {
   'Home Services': {
@@ -51,6 +52,7 @@ const CATEGORY_CONFIG = {
 };
 
 const TaskSelectionScreen = ({ navigation }) => {
+  const {colors} = useTheme()
   const [tasks, setTasks] = useState([]);
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [search, setSearch] = useState('');

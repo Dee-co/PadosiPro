@@ -8,16 +8,15 @@ import {
 } from 'react-native';
 import { ArrowLeft, ArrowRight, Mail } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
-
 import AppSafeAreaView from '../../components/ui/AppSafeAreaView';
 import AppText from '../../components/ui/AppText';
 import AppOtpInput from '../../components/ui/AppOtpInput';
 import AppButton from '../../components/ui/AppButton';
-
-import { colors, fonts } from '../../theme';
+import {  fonts } from '../../theme';
 import { verifyOtp, resendOtp } from '../../services/authService';
-
+import { useTheme } from '../../context/ThemeContext';
 const VerifyOtpScreen = ({ navigation, route }) => {
+  const {colors} = useTheme()
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);

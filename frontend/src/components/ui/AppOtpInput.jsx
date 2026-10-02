@@ -1,8 +1,10 @@
 import React from 'react';
-import { View } from 'react-native';
-import { OtpInput } from 'react-native-otp-entry';
+import {View} from 'react-native';
+import {OtpInput} from 'react-native-otp-entry';
 import AppText from './AppText';
-import { colors, fonts } from '../../theme';
+import {fonts} from '../../theme';
+import {useTheme} from '../../context/ThemeContext';
+
 const AppOtpInput = ({
   value = '',
   onChangeText,
@@ -12,6 +14,8 @@ const AppOtpInput = ({
   disabled = false,
   autoFocus = true,
 }) => {
+  const {colors} = useTheme();
+
   return (
     <View>
       <OtpInput
@@ -67,14 +71,14 @@ const AppOtpInput = ({
           },
         }}
       />
+
       {error && (
         <AppText
           variant="caption"
           color={colors.error}
           style={{
             marginTop: 8,
-          }}
-        >
+          }}>
           {error}
         </AppText>
       )}

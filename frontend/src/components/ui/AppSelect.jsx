@@ -17,7 +17,9 @@ import {
   AlertCircle,
 } from 'lucide-react-native';
 import AppText from './AppText';
-import { colors, fonts } from '../../theme';
+import { fonts } from '../../theme';
+import { useTheme } from '../../context/ThemeContext';
+
 const SEARCH_THRESHOLD = 6;
 const FIELD_HEIGHT = 54;
 const OPTION_HEIGHT = 56;
@@ -39,6 +41,7 @@ const AppSelect = ({
   leftIcon,
   searchable,
 }) => {
+  const { colors } = useTheme();
   const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState('');
   const selectedOption = options.find(option => option.value === value);
@@ -204,7 +207,8 @@ const AppSelect = ({
             backgroundColor: 'rgba(0,0,0,0.65)',
           }}
         >
-          <Pressable style={{ flex: 1 }} onPress={closeSheet} /> {/* Sheet */}
+          <Pressable style={{ flex: 1 }} onPress={closeSheet} />
+          {/* Sheet */}
           <View
             style={{
               maxHeight: '75%',
