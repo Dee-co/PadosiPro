@@ -1,5 +1,5 @@
 import React from 'react';
-import {ActivityIndicator, StatusBar, View} from 'react-native';
+import { ActivityIndicator, StatusBar, View } from 'react-native';
 import {
   NavigationContainer,
   DarkTheme,
@@ -9,12 +9,12 @@ import {
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 
-import {useAuth} from '../context/AuthContext';
-import {useTheme} from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const RootNavigator = () => {
-  const {isAuthenticated, isLoading, user} = useAuth();
-  const {colors, isDark} = useTheme();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const { colors, isDark } = useTheme();
 
   const navTheme = {
     ...(isDark ? DarkTheme : DefaultTheme),
@@ -34,17 +34,15 @@ const RootNavigator = () => {
         className="flex-1 items-center justify-center"
         style={{
           backgroundColor: colors.background,
-        }}>
+        }}
+      >
         <StatusBar
           barStyle={isDark ? 'light-content' : 'dark-content'}
           backgroundColor="transparent"
           translucent
         />
 
-        <ActivityIndicator
-          size="large"
-          color={colors.primary}
-        />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -56,14 +54,18 @@ const RootNavigator = () => {
       style={{
         flex: 1,
         backgroundColor: colors.background,
-      }}>
+      }}
+    >
       <StatusBar
         barStyle={isDark ? 'light-content' : 'dark-content'}
         backgroundColor="transparent"
         translucent
       />
-
       <NavigationContainer theme={navTheme}>
+        <AuthNavigator mode="auth" />
+      </NavigationContainer>
+
+      {/* <NavigationContainer theme={navTheme}>
         {!isAuthenticated ? (
           <AuthNavigator
             key="auth"
@@ -77,7 +79,7 @@ const RootNavigator = () => {
         ) : (
           <MainNavigator key="main" />
         )}
-      </NavigationContainer>
+      </NavigationContainer> */}
     </View>
   );
 };

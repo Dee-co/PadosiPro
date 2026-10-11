@@ -6,6 +6,7 @@ import RegisterScreen from '../screens/auth/RegisterScreen';
 import VerifyOtpScreen from '../screens/auth/VerifyOtpScreen';
 import ProfileScreen from '../screens/onboarding/ProfileScreen';
 import TaskSelectionScreen from '../screens/onboarding/TaskSelectionScreen';
+import MainNavigator from './MainNavigator';
 const Stack = createNativeStackNavigator();
 const AuthNavigator = ({ mode = 'auth' }) => {
   return (
@@ -25,6 +26,7 @@ const AuthNavigator = ({ mode = 'auth' }) => {
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="VerifyOtp" component={VerifyOtpScreen} />
+           <Stack.Screen name="Main" component={MainNavigator} />
         </>
       )}
     </Stack.Navigator>

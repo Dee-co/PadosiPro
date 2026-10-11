@@ -1,38 +1,61 @@
+
 export const darkColors = {
-  primary: '#35D56F',
-  primaryDark: '#27B85A',
-  primaryLight: '#5BE88A',
-  background: '#0B0D0C',
-  surface: '#171A18',
-  surfaceLight: '#202420',
-  textPrimary: '#F5F7F5',
-  textSecondary: '#A7ADA9',
-  textMuted: '#777E7A',
-  border: '#303632',
-  borderPrimary: '#245D39',
-  success: '#35D56F',
-  error: '#FF5C5C',
-  warning: '#F5C451',
+  // Primary
+  primary: '#FFD600',
+  primaryDark: '#E6C200',
+  primaryLight: '#FFE44D',
+
+  // Background
+  background: '#000000',
+  surface: '#121212',
+  surfaceLight: '#1F1F1F',
+
+  // Text
+  textPrimary: '#FFFFFF',
+  textSecondary: '#BDBDBD',
+  textMuted: '#858585',
+
+  // Borders
+  border: '#333333',
+  borderPrimary: '#665600',
+
+  // Status
+  success: '#FFD600',
+  error: '#FF5252',
+  warning: '#FFC107',
+
+  // Common
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
 };
 
 export const lightColors = {
-  primary: '#168A4A',
-  primaryDark: '#0F6B38',
-  primaryLight: '#3DBB72',
-  background: '#EAF3ED',
-  surface: '#FDFBF6',
-  surfaceLight: '#DCEBE1',
-  textPrimary: '#13271B',
-  textSecondary: '#526359',
-  textMuted: '#7D8B82',
-  border: '#C9D9CE',
-  borderPrimary: '#91C5A4',
-  success: '#168A4A',
-  error: '#D64545',
-  warning: '#C58A16',
+  // Primary
+  primary: '#FFD600',
+  primaryDark: '#E6C200',
+  primaryLight: '#FFE44D',
+
+  // Background
+  background: '#000000',
+  surface: '#121212',
+  surfaceLight: '#1F1F1F',
+
+  // Text
+  textPrimary: '#FFFFFF',
+  textSecondary: '#BDBDBD',
+  textMuted: '#858585',
+
+  // Borders
+  border: '#333333',
+  borderPrimary: '#665600',
+
+  // Status
+  success: '#FFD600',
+  error: '#FF5252',
+  warning: '#FFC107',
+
+  // Common
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',

@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, BriefcaseBusiness, UserRound } from 'lucide-react-native';
-import HomeScreen from '../screens/main/HomeScreen';
+import HomeScreen from '../screens/main/Home/HomeScreen';
 import ServicesScreen from '../screens/main/ServicesScreen';
 import AccountProfileScreen from '../screens/main/ProfileScreen';
 import EditProfileScreen from '../screens/onboarding/ProfileScreen';
